@@ -1,0 +1,32 @@
+find_trending_tokens:
+  description: >
+    Find the top trending crypto tokens in the news in {sector} by searching the latest news as of {current_date}. 
+    Be sure to include the search date in your queries and specify that you want recent information.
+    Find new tokens that you've not found before and verify they're currently active in the market.
+  expected_output: >
+    A list of trending tokens in {sector} with current market data
+  agent: trending_token_finder
+  output_file: output/trending_tokens.json
+
+research_trending_tokens:
+  description: >
+    Given a list of trending tokens, provide detailed analysis of each token in a report by searching online.
+    Include tokenomics, technology foundations, market adoption, team background, recent developments, and potential risks.
+  expected_output: >
+    A report containing detailed analysis of each token
+  agent: token_researcher
+  context:
+    - find_trending_tokens
+  output_file: output/research_report.json
+
+pick_best_token:
+  description: >
+    Analyze the research findings and pick the best token for investment.
+    Send a push notification to the user with the decision and 1 sentence rationale.
+    Then respond with a detailed report on why you chose this token, and which tokens were not selected.
+  expected_output: >
+    The chosen token and why it was chosen; the tokens that were not selected and why they were not selected.
+  agent: token_picker
+  context:
+    - research_trending_tokens
+  output_file: output/decision.md
