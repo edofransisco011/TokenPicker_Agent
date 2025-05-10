@@ -1,19 +1,44 @@
 find_trending_tokens:
   description: >
-    Find the top trending crypto tokens in the news in {sector} by searching the latest news as of {current_date}. 
-    Be sure to include the search date in your queries and specify that you want recent information.
-    Find new tokens that you've not found before and verify they're currently active in the market.
+    Conduct systematic discovery of trending tokens in {sector} using:
+    1. Market data (volume, market cap, price spikes)
+    2. Social metrics (search interest, engagement levels)
+    3. Development activity (GitHub commits, core contributors)
+    4. On-chain signals (spikes in transactions, wallet growth)
+
+    Use timestamped source links (news, dashboards, explorers) found via structured search using `serper.dev`.
+    Detect potential anomalies or early signals (e.g., sudden whale activity, inactive project revival).
+
+    Track previous observations to flag multi-day movements.
   expected_output: >
-    A list of trending tokens in {sector} with current market data
+    A structured list of tokens with:
+      - Basic info (name, symbol, contract address)
+      - Metric snapshot (volume, sentiment, commits, transactions)
+      - Observed changes vs previous values
+      - Search terms used and top result URLs
+      - Timestamp
   agent: trending_token_finder
   output_file: output/trending_tokens.json
+  search_query_template: >
+    "{token_name} on-chain activity OR wallet distribution OR GitHub commits site:dune.com OR site:etherscan.io OR site:github.com"
 
 research_trending_tokens:
   description: >
-    Given a list of trending tokens, provide detailed analysis of each token in a report by searching online.
-    Include tokenomics, technology foundations, market adoption, team background, recent developments, and potential risks.
+    Perform in-depth research on each trending token from context using:
+    1. Technical Analysis (price trend, volume patterns)
+    2. On-chain metrics (wallet distribution, transaction flows, 30-day moving averages)
+    3. Social behavior (search trends, media engagement)
+    4. Developer footprint (repo activity, contributor velocity)
+
+    Include anomaly detection and test for metric deviations beyond 1.5 std deviation from trailing mean.
+    Highlight metrics with positive divergence and cluster tokens with similar behavioral patterns.
   expected_output: >
-    A report containing detailed analysis of each token
+    A detailed research report with:
+      - On-chain trend graphs
+      - Metric tables
+      - Z-score, delta %, and momentum interpretation
+      - Links to search results and GitHub repos
+      - JSON and Markdown output
   agent: token_researcher
   context:
     - find_trending_tokens
@@ -21,12 +46,26 @@ research_trending_tokens:
 
 pick_best_token:
   description: >
-    Analyze the research findings and pick the best token for investment.
-    Send a push notification to the user with the decision and 1 sentence rationale.
-    Then respond with a detailed report on why you chose this token, and which tokens were not selected.
+    Apply a scoring model to select best token(s) in {sector} using:
+    1. Weighted metrics (on-chain, dev, sentiment, price)
+    2. Volatility vs consistency ratio
+    3. Developer-to-user engagement ratio
+    4. Momentum trend over 7 and 30-day windows
+
+    Score each token on a 0–100 scale and highlight top 3 picks with rationale.
+    Include risk assessment and correlation to ETH/BTC where data is sufficient.
   expected_output: >
-    The chosen token and why it was chosen; the tokens that were not selected and why they were not selected.
+    A decision report containing:
+      - Ranked tokens with scores and breakdown
+      - Confidence intervals
+      - Volatility and liquidity heatmap
+      - Markdown summary with recommendation notes
   agent: token_picker
   context:
     - research_trending_tokens
   output_file: output/decision.md
+  scoring_weights:
+    on_chain: 0.4
+    development: 0.2
+    sentiment: 0.2
+    price_structure: 0.2
