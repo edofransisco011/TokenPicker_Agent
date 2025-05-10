@@ -1,54 +1,98 @@
-# TokenPicker Crew
+# Crypto Token Research and Selection Project
 
-Welcome to the TokenPicker Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+## Overview
 
-## Installation
+This project demonstrates an automated system for identifying, researching, and selecting trending cryptocurrency tokens suitable for investment. Built as a showcase for portfolio purposes, it highlights practical applications of automation, data-driven decision-making, and integrated notifications.
 
-Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+---
 
-First, if you haven't already, install uv:
+## Purpose
 
-```bash
-pip install uv
-```
+The purpose of this project is to:
 
-Next, navigate to your project directory and install the dependencies:
+* Demonstrate automation in crypto market analysis.
+* Showcase technical proficiency in Python, API integration, and agent-driven architecture.
+* Serve as a practical example of skills and a conceptual illustration.
 
-(Optional) Lock the dependencies and install them by using the CLI command:
-```bash
-crewai install
-```
-### Customizing
+**Note:** This project is exclusively for portfolio demonstration and educational purposes.
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+---
 
-- Modify `src/token_picker/config/agents.yaml` to define your agents
-- Modify `src/token_picker/config/tasks.yaml` to define your tasks
-- Modify `src/token_picker/crew.py` to add your own logic, tools and specific args
-- Modify `src/token_picker/main.py` to add custom inputs for your agents and tasks
+## Project Structure
 
-## Running the Project
+### Main Execution
 
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+* `main.py`:
 
-```bash
-$ crewai run
-```
+  * Entry point of the project.
+  * Initializes and executes the automated workflow.
+  * Specifies inputs like crypto sector and current date for token analysis.
 
-This command initializes the token_picker Crew, assembling the agents and assigning them tasks as defined in your configuration.
+### Configuration
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+* `agents.yaml`:
 
-## Understanding Your Crew
+  * Defines roles and goals for each automated agent, including:
 
-The token_picker Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+    * **Crypto News Analyst:** Finds trending tokens.
+    * **Senior Crypto Researcher:** Analyzes identified tokens.
+    * **Token Picker:** Selects the optimal token for investment.
+    * **Manager:** Coordinates tasks among agents.
 
-## Support
+* `tasks.yaml`:
 
-For support, questions, or feedback regarding the TokenPicker Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+  * Outlines the specific tasks each agent performs:
 
-Let's create wonders together with the power and simplicity of crewAI.
+    * Find trending tokens.
+    * Conduct detailed token research.
+    * Select and notify about the best investment token.
+
+### Agent Management
+
+* `crew.py`:
+
+  * Manages the creation and coordination of agents and tasks.
+  * Implements structured data models for tokens and research outcomes.
+  * Handles hierarchical processing through agent delegation and task execution.
+
+### Notification System
+
+* `push_tool.py`:
+
+  * Implements push notifications via the Pushover API.
+  * Sends real-time alerts about selected crypto tokens.
+  * Handles logging, error management, and simulation for scenarios without valid credentials.
+
+---
+
+## How it Works
+
+The automated workflow follows a clear sequence:
+
+1. **Token Discovery:**
+
+   * Searches recent crypto news to identify trending tokens within a specified sector (e.g., "meme" tokens).
+
+2. **Token Analysis:**
+
+   * Provides comprehensive research on each trending token, covering technology, tokenomics, market positioning, team strength, growth potential, and associated risks.
+
+3. **Token Selection:**
+
+   * Analyzes research outcomes to select the most promising token for investment.
+   * Sends immediate notifications with investment insights.
+
+---
+
+## Technical Details
+
+* **Programming Language:** Python
+* **APIs Used:** SerperDev API (for data collection), Pushover API (for notifications)
+* **Framework:** CrewAI for agent-driven automation
+* **Data Handling:** Structured JSON reports, detailed markdown documentation
+
+---
+
+## Important Disclaimer
+
+This project is designed solely as a demonstration for portfolio purposes. It should not be used for real investment decisions or relied upon for financial advice.
