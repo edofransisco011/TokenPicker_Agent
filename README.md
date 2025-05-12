@@ -155,7 +155,7 @@ This section provides detailed descriptions of the tasks performed by the Token 
 - **`SerperDevTool`**: Used by `trending_token_finder` and `token_researcher` for performing web searches via serper.dev.
 - **`PushNotificationTool`**: Used by `token_picker` to send notifications via Pushover. (Custom tool located in `token_picker/tools/push_tool.py`)
 
-## Project File Structure
+## Project File Structure & Setup and Installation
 
 ```plaintext
 token_picker_project/
