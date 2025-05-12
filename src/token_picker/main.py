@@ -14,7 +14,7 @@ def run():
     Run the crypto token research crew.
     """
     inputs = {
-        'sector': 'layer 1',  # Changed from Technology to DeFi as a crypto-specific sector
+        'sector': 'rwa',  # Changed from Technology to DeFi as a crypto-specific sector
         "current_date": str(datetime.now())
     }
 
