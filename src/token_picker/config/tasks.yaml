@@ -1,44 +1,40 @@
 find_trending_tokens:
   description: >
-    Conduct systematic discovery of trending tokens in {sector} using:
-    1. Market data (volume, market cap, price spikes)
-    2. Social metrics (search interest, engagement levels)
-    3. Development activity (GitHub commits, core contributors)
-    4. On-chain signals (spikes in transactions, wallet growth)
-
-    Use timestamped source links (news, dashboards, explorers) found via structured search using `serper.dev`.
-    Detect potential anomalies or early signals (e.g., sudden whale activity, inactive project revival).
-
-    Track previous observations to flag multi-day movements.
+    Identify 3-5 tokens in the {sector} that are currently trending based on recent news coverage, significant announcements, or high discussion volume discovered via web search ({current_date}).
+    Focus on the *reasons* (news, events, narratives) why they are trending.
+    Use the SerperDevTool to search for recent news and discussions related to tokens in the {sector}.
+    Explicitly cite the source URLs for the information backing the trending reason.
+    Do NOT invent metrics, percentages, specific commit numbers, or dates. Summarize the actual findings from search results.
   expected_output: >
-    A structured list of tokens with:
-      - Basic info (name, symbol, contract address)
-      - Metric snapshot (volume, sentiment, commits, transactions)
-      - Observed changes vs previous values
-      - Search terms used and top result URLs
-      - Timestamp
+    A structured list (JSON format) of trending tokens. Each entry must include:
+      - name: The token's name.
+      - ticker: The token's ticker symbol (use 'N/A' if not easily found).
+      - trending_reason: A concise summary (1-2 sentences) of the specific news, event, or narrative causing the token to trend, based *only* on search results.
+      - source_urls: A list of actual URLs from the search results that support the trending_reason.
   agent: trending_token_finder
   output_file: output/trending_tokens.json
-  search_query_template: >
-    "{token_name} on-chain activity OR wallet distribution OR GitHub commits site:dune.com OR site:etherscan.io OR site:github.com"
+  # Removed search_query_template as it might be too specific and lead to less diverse results initially. Let the agent formulate queries based on the goal.
 
 research_trending_tokens:
   description: >
-    Perform in-depth research on each trending token from context using:
-    1. Technical Analysis (price trend, volume patterns)
-    2. On-chain metrics (wallet distribution, transaction flows, 30-day moving averages)
-    3. Social behavior (search trends, media engagement)
-    4. Developer footprint (repo activity, contributor velocity)
-
-    Include anomaly detection and test for metric deviations beyond 1.5 std deviation from trailing mean.
-    Highlight metrics with positive divergence and cluster tokens with similar behavioral patterns.
+    Perform in-depth web research on each trending token from the context ({current_date}). For each token:
+    1. Summarize key recent news, updates, and narratives surrounding the token using web search results.
+    2. Assess and summarize the general social media/community sentiment (positive, negative, neutral) based on search findings.
+    3. Locate and provide direct URLs to the token's official website, documentation, and primary code repository (e.g., GitHub).
+    4. Search for and provide direct URLs to relevant on-chain analytics dashboards (e.g., Dune, Etherscan, DefiLlama, specific block explorers) where metrics like wallet distribution, transaction activity, and TVL (if applicable) can be found.
+    5. Briefly summarize the token's core technology and primary use case.
+    Prioritize information from reliable sources found via web search.
   expected_output: >
-    A detailed research report with:
-      - On-chain trend graphs
-      - Metric tables
-      - Z-score, delta %, and momentum interpretation
-      - Links to search results and GitHub repos
-      - JSON and Markdown output
+    A structured research report (JSON format) containing a list of objects, one for each token. Each object should include:
+      - Token Name
+      - Summary of Recent News & Narratives
+      - Summary of Social Sentiment
+      - URL to Official Website
+      - URL to Documentation (if found)
+      - URL to Code Repository (if found)
+      - URLs to relevant On-Chain Data Dashboards (list of links found)
+      - Summary of Technology & Use Case
+      - List of primary source URLs used for the summary.
   agent: token_researcher
   context:
     - find_trending_tokens
@@ -46,26 +42,20 @@ research_trending_tokens:
 
 pick_best_token:
   description: >
-    Apply a scoring model to select best token(s) in {sector} using:
-    1. Weighted metrics (on-chain, dev, sentiment, price)
-    2. Volatility vs consistency ratio
-    3. Developer-to-user engagement ratio
-    4. Momentum trend over 7 and 30-day windows
-
-    Score each token on a 0–100 scale and highlight top 3 picks with rationale.
-    Include risk assessment and correlation to ETH/BTC where data is sufficient.
+    Analyze the research report provided in the context, which includes summaries of news, sentiment, technology, use cases, and links to official resources and data dashboards for several trending tokens in the {sector}.
+    Based *only* on the provided research summary (news, sentiment, tech/use case) and the *potential insights* suggested by the linked resources (official site, docs, repo, dashboards), select the single most promising token for potential investment.
+    Your evaluation should consider factors like: recent positive news/developments, strong positive sentiment, clear utility/use case, apparent development activity (suggested by repo link presence), and potential for insights from linked data dashboards.
+    Do NOT invent metrics or scores. Base your decision on a qualitative assessment of the summarized information and the availability/implication of linked resources.
+    After choosing, send a push notification summarizing the pick and the main reason (1 sentence).
+    Finally, provide a rationale explaining why the chosen token was selected and briefly why the others were not, based on the research context.
   expected_output: >
-    A decision report containing:
-      - Ranked tokens with scores and breakdown
-      - Confidence intervals
-      - Volatility and liquidity heatmap
-      - Markdown summary with recommendation notes
+    A markdown report containing:
+      - The name of the chosen token.
+      - A detailed rationale for the selection, referencing specific points from the research context (news summary, sentiment, use case, availability of resource links).
+      - A brief explanation for why other tokens from the research context were not selected.
+      - Confirmation that the push notification was sent.
   agent: token_picker
   context:
     - research_trending_tokens
   output_file: output/decision.md
-  scoring_weights:
-    on_chain: 0.4
-    development: 0.2
-    sentiment: 0.2
-    price_structure: 0.2
+  # Removed scoring_weights as the input data format has changed and direct scoring is no longer feasible without hallucination or dedicated tools.
