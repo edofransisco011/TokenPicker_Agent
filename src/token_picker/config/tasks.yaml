@@ -5,40 +5,62 @@ find_trending_tokens:
     Use the SerperDevTool to search for recent news and discussions related to tokens in the {sector}.
     Explicitly cite the source URLs for the information backing the trending reason.
     Do NOT invent metrics, percentages, specific commit numbers, or dates. Summarize the actual findings from search results.
+    Handle cases where limited or no results are found by explicitly stating the search limitations.
+    Implement retry mechanism (max 3 attempts) for failed searches.
   expected_output: >
     A structured list (JSON format) of trending tokens. Each entry must include:
-      - name: The token's name.
-      - ticker: The token's ticker symbol (use 'N/A' if not easily found).
-      - trending_reason: A concise summary (1-2 sentences) of the specific news, event, or narrative causing the token to trend, based *only* on search results.
-      - source_urls: A list of actual URLs from the search results that support the trending_reason.
+      - name: The token's name (string, required).
+      - ticker: The token's ticker symbol (string, use 'N/A' if not easily found).
+      - trending_reason: A concise summary (1-2 sentences, max 200 characters) of the specific news, event, or narrative causing the token to trend, based *only* on search results.
+      - source_urls: A list of actual URLs (minimum 1, maximum 5) from the search results that support the trending_reason.
+      - search_quality: A rating (1-5) indicating the quality and coverage of search results.
+      - last_updated: Timestamp of the search (ISO 8601 format).
+  validation_rules:
+    - name must be non-empty string
+    - ticker must be non-empty string
+    - trending_reason must be between 10 and 200 characters
+    - source_urls must contain at least one valid URL
+    - search_quality must be between 1 and 5
   agent: trending_token_finder
   output_file: output/trending_tokens.json
-  # Removed search_query_template as it might be too specific and lead to less diverse results initially. Let the agent formulate queries based on the goal.
+  timeout: 300  # 5 minutes
+  retry_attempts: 3
 
 research_trending_tokens:
   description: >
     Perform in-depth web research on each trending token from the context ({current_date}). For each token:
-    1. Summarize key recent news, updates, and narratives surrounding the token using web search results.
-    2. Assess and summarize the general social media/community sentiment (positive, negative, neutral) based on search findings.
+    1. Summarize key recent news, updates, and narratives surrounding the token using web search results (last 7 days only).
+    2. Assess and summarize the general social media/community sentiment (positive, negative, neutral) based on search findings, including confidence level (1-5).
     3. Locate and provide direct URLs to the token's official website, documentation, and primary code repository (e.g., GitHub).
     4. Search for and provide direct URLs to relevant on-chain analytics dashboards (e.g., Dune, Etherscan, DefiLlama, specific block explorers) where metrics like wallet distribution, transaction activity, and TVL (if applicable) can be found.
     5. Briefly summarize the token's core technology and primary use case.
     Prioritize information from reliable sources found via web search.
+    Handle cases where certain resources cannot be found by explicitly stating their absence.
+    Implement retry mechanism (max 3 attempts) for failed searches.
   expected_output: >
     A structured research report (JSON format) containing a list of objects, one for each token. Each object should include:
-      - Token Name
-      - Summary of Recent News & Narratives
-      - Summary of Social Sentiment
-      - URL to Official Website
-      - URL to Documentation (if found)
-      - URL to Code Repository (if found)
-      - URLs to relevant On-Chain Data Dashboards (list of links found)
-      - Summary of Technology & Use Case
-      - List of primary source URLs used for the summary.
+      - Token Name (string, required)
+      - Summary of Recent News & Narratives (string, max 500 characters)
+      - Summary of Social Sentiment (object with fields: sentiment, confidence_level, sources)
+      - URL to Official Website (string or null)
+      - URL to Documentation (string or null)
+      - URL to Code Repository (string or null)
+      - URLs to relevant On-Chain Data Dashboards (array of strings)
+      - Summary of Technology & Use Case (string, max 300 characters)
+      - List of primary source URLs used for the summary (array of strings, min 1)
+      - Research Quality Score (1-5)
+      - Last Updated (ISO 8601 timestamp)
+  validation_rules:
+    - All required fields must be present
+    - Summary lengths must be within specified limits
+    - At least one source URL must be provided
+    - Research Quality Score must be between 1 and 5
   agent: token_researcher
   context:
     - find_trending_tokens
   output_file: output/research_report.json
+  timeout: 600  # 10 minutes
+  retry_attempts: 3
 
 pick_best_token:
   description: >
@@ -46,16 +68,24 @@ pick_best_token:
     Based *only* on the provided research summary (news, sentiment, tech/use case) and the *potential insights* suggested by the linked resources (official site, docs, repo, dashboards), select the single most promising token for potential investment.
     Your evaluation should consider factors like: recent positive news/developments, strong positive sentiment, clear utility/use case, apparent development activity (suggested by repo link presence), and potential for insights from linked data dashboards.
     Do NOT invent metrics or scores. Base your decision on a qualitative assessment of the summarized information and the availability/implication of linked resources.
-    After choosing, send a push notification summarizing the pick and the main reason (1 sentence).
+    After choosing, send a push notification summarizing the pick and the main reason (1 sentence, max 200 characters).
     Finally, provide a rationale explaining why the chosen token was selected and briefly why the others were not, based on the research context.
+    Handle cases where all tokens show similar potential by explicitly stating this and providing a balanced comparison.
   expected_output: >
     A markdown report containing:
-      - The name of the chosen token.
-      - A detailed rationale for the selection, referencing specific points from the research context (news summary, sentiment, use case, availability of resource links).
-      - A brief explanation for why other tokens from the research context were not selected.
-      - Confirmation that the push notification was sent.
+      - The name of the chosen token (string, required)
+      - A detailed rationale for the selection (string, max 1000 characters)
+      - A brief explanation for why other tokens were not selected (string, max 500 characters)
+      - Confirmation that the push notification was sent (boolean)
+      - Decision Confidence Score (1-5)
+      - Last Updated (ISO 8601 timestamp)
+  validation_rules:
+    - All required fields must be present
+    - Rationale and explanation lengths must be within specified limits
+    - Decision Confidence Score must be between 1 and 5
   agent: token_picker
   context:
     - research_trending_tokens
   output_file: output/decision.md
-  # Removed scoring_weights as the input data format has changed and direct scoring is no longer feasible without hallucination or dedicated tools.
+  timeout: 300  # 5 minutes
+  retry_attempts: 2
